@@ -21,8 +21,14 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // 混淆
+            minifyEnabled true
+            // Zipalign优化
+            zipAlignEnabled true
+            // 移除无用的resource文件
+            shrinkResources true
+            // 前一部分代表系统默认的android程序的混淆文件，该文件已经包含了基本的混淆声明，后一个文件是自己的定义混淆文件
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
@@ -48,11 +54,11 @@ android {
 dependencies {
 
     implementation 'androidx.core:core-ktx:1.7.0'
-    implementation "androidx.compose.ui:ui:1.2.0-beta03"
+    implementation "androidx.compose.ui:ui:1.2.0-rc03"
     implementation 'androidx.compose.material3:material3:1.0.0-alpha13'
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.1'
-    implementation 'androidx.activity:activity-compose:1.3.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.1'
+    implementation 'androidx.activity:activity-compose:1.4.0'
     implementation files('libs/Yu2Java-v2-debug.jar')
     implementation files('libs\\Yu2Java-v2-debug.jar')
     implementation files('libs\\json.jar')
@@ -75,4 +81,11 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor")
 
     implementation("io.coil-kt:coil-compose:2.1.0")
+
+    implementation 'androidx.palette:palette:1.0.0'
+
+    implementation 'com.github.SmartToolFactory:Compose-Extended-Colors:1.0.0-alpha07'
+
+    implementation 'com.github.bumptech.glide:glide:4.13.2'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.13.2'
 }
