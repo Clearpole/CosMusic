@@ -7,30 +7,30 @@ import android.os.Bundle
 import android.text.TextUtils
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.palette.graphics.Palette
-import androidx.palette.graphics.Palette.Swatch
 import coil.compose.AsyncImage
 import com.clearpole.cosmusic.ui.theme.CosMusicTheme
 import com.smarttoolfactory.extendedcolors.util.getColorTonesList
@@ -56,12 +56,8 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Box {
-                        val listState = rememberLazyListState()
                         Background(mute = back)
-                        val state = rememberScrollState()
-                       
-                            NewSongList(back,listState)
-
+                        NewSongList(back)
                         BottomAppBarHome(back)
                     }
                 }
@@ -89,38 +85,42 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun NewSongList(back: MutableState<String>,listState:LazyListState) {
-        Row(Modifier.padding(10.dp).clip(RoundedCornerShape(30.dp))) {
-            LazyColumn(state = listState) {
+    fun NewSongList(back: MutableState<String>) {
+        Row(
+            Modifier
+                .padding(10.dp)
+                .clip(RoundedCornerShape(30.dp))) {
+            LazyColumn {
                 if (!TextUtils.isEmpty(inputText.value)) {
                     val data =
                         JSONObject(inputText.value).getJSONObject("songs").getJSONArray("list")
-                    items(data.length()) {
-                        val everyInfo = data.getJSONObject(it)
-                        val file = everyInfo.getString("filename")
-                        val songName = file.substring(file.indexOf(" - ") + 3 until file.length)
-                        val artist = file.substring(0 until file.indexOf(" -"))
-                        val img =
-                            everyInfo.getString("album_sizable_cover").replace("{size}", "150")
-                        val hash = everyInfo.getString("hash")
-                        HomeSongCard(
-                            imgUrl = img,
-                            songName = songName,
-                            artist = artist,
-                            hash = hash,
-                            act = this@MainActivity,
-                            mute = back
-                        )
+                    for (i in 0..data.length()) {
+                        try {
+                            val everyInfo = data.getJSONObject(i)
+                            val file = everyInfo.getString("filename")
+                            val songName = file.substring(file.indexOf(" - ") + 3 until file.length)
+                            val artist = file.substring(0 until file.indexOf(" -"))
+                            val img =
+                                everyInfo.getString("album_sizable_cover").replace("{size}", "150")
+                            val hash = everyInfo.getString("hash")
+                            item {
+                                if (i < data.length()) {
+                                    HomeSongCard(
+                                        imgUrl = img,
+                                        songName = songName,
+                                        artist = artist,
+                                        hash = hash,
+                                        act = this@MainActivity,
+                                        mute = back
+                                    )
+                                }
+                            }
+                        } catch (e: Exception) {
+                            println(e)
+                        }
                     }
                 }
             }
-        }
-        remember {
-            derivedStateOf {
-                listState.firstVisibleItemIndex > 0
-            }
-        }
-        if (listState.firstVisibleItemIndex==0){
         }
     }
 }
@@ -136,7 +136,8 @@ fun HomeSongCard(
 ) {
     Column(
         Modifier
-            .clip(RoundedCornerShape(8.dp))) {
+            .clip(RoundedCornerShape(8.dp))
+    ) {
         Row(modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
@@ -146,7 +147,7 @@ fun HomeSongCard(
                     Palette
                         .from(netToLoacalBitmap(imgUrl.replace("http", "https"))!!)
                         .generate {
-                            var vibrant: Swatch? = it!!.vibrantSwatch
+                            var vibrant: Palette.Swatch? = it!!.vibrantSwatch
                             if (vibrant == null) {
                                 for (swatch in it.swatches) {
                                     vibrant = swatch
